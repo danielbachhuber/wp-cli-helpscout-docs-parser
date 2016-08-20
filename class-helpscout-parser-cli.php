@@ -91,7 +91,7 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 	 * Get categories from a collection.
 	 *
 	 * @param  string $collection_id the collection ID.
-	 * @return object
+	 * @return array
 	 */
 	private function get_categories( $collection_id ) {
 
@@ -105,6 +105,31 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		);
 
 		$request = wp_remote_get( 'https://docsapi.helpscout.net/v1/collections/'. $collection_id .'/categories', $params );
+		$request = wp_remote_retrieve_body( $request );
+		$request = json_decode( $request );
+
+		return $request;
+
+	}
+
+	/**
+	 * Retrieves a list of articles for a specific category.
+	 *
+	 * @param  string $category_id the id of the category we'll use to get articles.
+	 * @return array
+	 */
+	private function get_articles( $category_id ) {
+
+		$params = array(
+			'method'          => 'GET',
+			'headers'         => array(
+				'Authorization' => 'Basic ' . base64_encode( $this->get_api_key() . ':' . 'X' )
+			),
+			'sslverify'       => false,
+			'timeout'         => 15
+		);
+
+		$request = wp_remote_get( 'https://docsapi.helpscout.net/v1/categories/'. $category_id .'/articles', $params );
 		$request = wp_remote_retrieve_body( $request );
 		$request = json_decode( $request );
 
@@ -130,7 +155,7 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 				'slug'        => sanitize_title( $cat->name ),
 				'name'        => $cat->name,
 				'description' => $cat->description,
-				'articles'    => $cat->articleCount
+				'articles'    => $cat->articleCount,
 			);
 
 		}
