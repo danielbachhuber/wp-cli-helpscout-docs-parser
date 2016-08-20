@@ -179,7 +179,7 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		$data .= '<head lang="en">';
 		$data .= '<meta http-equiv="content-type" content="text/html;charset=utf-8">';
 		$data .= '<meta name="viewport" content="width=device-width"/>';
-		$data .= '<title>'. $theme_name .' Documentation | '. $theme_author .'</title>';
+		$data .= '<title>'. esc_html( $theme_name ) .' Documentation | '. esc_html( $theme_author ) .'</title>';
 		$data .= '<style type="text/css">';
 		$data .= $this->get_css();
 		$data .= '</style>';
@@ -223,11 +223,24 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 
 		$data = '<section id="Menu">';
 		$data .= '<header>';
-		$data .= '<h1>'. $theme_name .' <span>Help Guide</span></h1>';
+		$data .= '<h1>'. esc_html( $theme_name ) .' <span>Documentation</span></h1>';
+
+		$description = apply_filters( 'wpcli_helpscout_doc_description', '' );
+
+		if( $description !== '' ) {
+			$data .= '<p>'. $description .'</p>';
+		}
+
 		$data .= '</header>';
 
+		// Other links.
 		$data .= '<nav>';
+		$data .= '<a href="'. apply_filters( 'wpcli_helpscout_doc_demo_url', '#' ) .'">Live Demo</a>';
+		$data .= '<a href="'. apply_filters( 'wpcli_helpscout_doc_changelog_url', '#' ) .'">Changelog</a>';
+		$data .= '</nav>';
 
+		// Navigation.
+		$data .= '<nav>';
 		$total = count( $categories );
 
 		WP_CLI::line();
@@ -235,7 +248,7 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 
 		for( $i = 0; $i < count( $categories ); $i++ ) {
 			$notify->tick();
-			$data .= '<a href="#'. $categories[$i]['slug'] .'">'. $categories[$i]['name'] .'</a>';
+			$data .= '<a href="#'. esc_html( $categories[$i]['slug'] ) .'">'. esc_html( $categories[$i]['name'] ) .'</a>';
 		}
 
 		$notify->finish();
