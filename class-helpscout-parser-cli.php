@@ -70,7 +70,7 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		// Create documenatation.
 		WP_CLI::line();
 		WP_CLI::line( sprintf( esc_html( 'Generating documentation file in %s' ), get_template_directory() ) );
-		$this->generate_documentation( $theme, '', '' );
+		$this->generate_documentation( $theme, $formatted_categories, '' );
 
 	}
 
@@ -127,7 +127,7 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 			$formatted_categories[] = array(
 				'id'          => $cat->id,
 				'number'      => $cat->number,
-				'slug'        => $cat->slug,
+				'slug'        => sanitize_title( $cat->name ),
 				'name'        => $cat->name,
 				'description' => $cat->description,
 				'articles'    => $cat->articleCount
@@ -154,8 +154,9 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 
 		$handle = fopen( $path . '/' . $file, 'w' ) or WP_CLI::error( esc_html( 'Could not create documentation.html file.' ) );
 
-		// Set headers of the html file.
+		// Create docs file.
 		$this->set_headers( $theme );
+		$this->create_menu( $theme, $categories );
 
 	}
 
@@ -171,7 +172,7 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		$theme_name    = $theme->get( 'Name' );
 		$theme_author  = $theme->get( 'Author' );
 
-		$handle = fopen( $path . '/' . $file, 'w+' ) or WP_CLI::error( esc_html( 'Something went wrong, could not read documentation.html file.' ) );
+		$handle = fopen( $path . '/' . $file, 'a' ) or WP_CLI::error( esc_html( 'Something went wrong, could not read documentation.html file.' ) );
 
 		$data = '<!DOCTYPE html>';
 		$data .= '<html id="html" class="no-js">';
@@ -183,6 +184,7 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		$data .= $this->get_css();
 		$data .= '</style>';
 		$data .= '</head>';
+		$data .= '<body>';
 
 		fwrite( $handle, $data );
 
@@ -201,6 +203,47 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		$style = file_get_contents( $path . '/' . $file );
 
 		return $style;
+
+	}
+
+	/**
+	 * Creates menu markup for the documentation.
+	 *
+	 * @param  object $theme      current theme's details.
+	 * @param  array $categories  categories uses for the menu.
+	 * @return void
+	 */
+	private function create_menu( $theme, $categories ) {
+
+		$file       = 'documentation.html';
+		$path       = get_template_directory();
+		$theme_name = $theme->get( 'Name' );
+
+		$handle = fopen( $path . '/' . $file, 'a' ) or WP_CLI::error( esc_html( 'Something went wrong, could not read documentation.html file.' ) );
+
+		$data = '<section id="Menu">';
+		$data .= '<header>';
+		$data .= '<h1>'. $theme_name .' <span>Help Guide</span></h1>';
+		$data .= '</header>';
+
+		$data .= '<nav>';
+
+		$total = count( $categories );
+
+		WP_CLI::line();
+		$notify = \WP_CLI\Utils\make_progress_bar( "Generating $total menu items", $total );
+
+		for( $i = 0; $i < count( $categories ); $i++ ) {
+			$notify->tick();
+			$data .= '<a href="#'. $categories[$i]['slug'] .'">'. $categories[$i]['name'] .'</a>';
+		}
+
+		$notify->finish();
+		WP_CLI::line();
+
+		$data .= '</nav>';
+
+		fwrite( $handle, $data );
 
 	}
 
