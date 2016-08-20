@@ -1,0 +1,23 @@
+{
+		"name": "alessandrotesoro/wp-cli-helpscout-docs-parser",
+		"license": "GPLv2+",
+		"description": "WP-CLI Plugin: extract helpscout docs articles and categories to build an offline documentation.",
+		"homepage": "https://github.com/alessandrotesoro/wp-cli-helpscout-docs-parser",
+		"authors": [{
+				"name": "Alessandro Tesoro",
+				"email": "alessandro.tesoro@icloud.com",
+				"homepage": "http://alessandrotesoro.me"
+		}],
+		"keywords": [
+				"wordpress",
+				"wordpress helper"
+		],
+		"support": {
+				"issues": "https://github.com/alessandrotesoro/wp-cli-helpscout-docs-parser/issues/"
+		},
+		"require": {
+				"php": ">=5.5.0",
+				"composer/installers": "~1.0",
+				"m1x0n/helpscout-docs-api-php": "*"
+		}
+}
