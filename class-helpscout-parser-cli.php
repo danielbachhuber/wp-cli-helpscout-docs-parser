@@ -95,20 +95,32 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 	 */
 	private function get_categories( $collection_id ) {
 
-		$params = array(
-			'method'          => 'GET',
-			'headers'         => array(
-				'Authorization' => 'Basic ' . base64_encode( $this->get_api_key() . ':' . 'X' )
-			),
-			'sslverify'       => false,
-			'timeout'         => 15
-		);
+		$transient = get_transient( "wpcli_helpscout_docs_categories_{$collection_id}" );
 
-		$request = wp_remote_get( 'https://docsapi.helpscout.net/v1/collections/'. $collection_id .'/categories', $params );
-		$request = wp_remote_retrieve_body( $request );
-		$request = json_decode( $request );
+		if( ! empty( $transient ) ) {
 
-		return $request;
+			return $transient;
+
+		} else {
+
+			$params = array(
+				'method'          => 'GET',
+				'headers'         => array(
+					'Authorization' => 'Basic ' . base64_encode( $this->get_api_key() . ':' . 'X' )
+				),
+				'sslverify'       => false,
+				'timeout'         => 15
+			);
+
+			$request = wp_remote_get( 'https://docsapi.helpscout.net/v1/collections/'. $collection_id .'/categories', $params );
+			$request = wp_remote_retrieve_body( $request );
+			$request = json_decode( $request );
+
+			set_transient( "wpcli_helpscout_docs_categories_{$collection_id}", $request, DAY_IN_SECONDS );
+
+			return $request;
+
+		}
 
 	}
 
@@ -165,6 +177,31 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 	}
 
 	/**
+	 * Get a specific article from helpscout docs.
+	 *
+	 * @param  string $id ID of the article.
+	 * @return object
+	 */
+	private function get_article( $id ) {
+
+		$params = array(
+			'method'          => 'GET',
+			'headers'         => array(
+				'Authorization' => 'Basic ' . base64_encode( $this->get_api_key() . ':' . 'X' )
+			),
+			'sslverify'       => false,
+			'timeout'         => 15
+		);
+
+		$request = wp_remote_get( 'https://docsapi.helpscout.net/v1/articles/' . $id , $params );
+		$request = wp_remote_retrieve_body( $request );
+		$request = json_decode( $request );
+
+		return $request;
+
+	}
+
+	/**
 	 * Generate offline documentation.
 	 *
 	 * @param  object $theme      current theme's information.
@@ -182,6 +219,7 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		// Create docs file.
 		$this->set_headers( $theme );
 		$this->create_menu( $theme, $categories );
+		$this->render_sections( $categories );
 
 	}
 
@@ -279,7 +317,62 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		$notify->finish();
 		WP_CLI::line();
 
-		$data .= '</nav>';
+		$data .= '</nav></section>';
+
+		fwrite( $handle, $data );
+
+	}
+
+	/**
+	 * Render all sections within the documentation.
+	 *
+	 * @param  array $categories categories to render.
+	 * @return void
+	 */
+	private function render_sections( $categories ) {
+
+		$file = 'documentation.html';
+		$path = get_template_directory();
+
+		$handle = fopen( $path . '/' . $file, 'a' ) or WP_CLI::error( esc_html( 'Something went wrong, could not read documentation.html file.' ) );
+
+		$data = '';
+
+		// Generate section block.
+		foreach ( $categories as $section ) {
+
+			$data .= '<section id="'. esc_html( $section['slug'] ) .'">';
+			$data .= '<h1><a href="'. esc_html( $section['slug'] ) .'">'. esc_html( $section['name'] ) .'</a><small><a href="#html">Back to Top</a></small></h1>';
+			$data .= '<p>'. esc_html( $section['description'] ) .'</p>';
+
+			// Generate articles for each section.
+			$articles       = $this->get_articles( $section['id'] );
+			$articles_found = $articles->articles->items;
+			$total          = $articles->articles->count;
+
+			$section_name = '"'.$section['name'].'"';
+
+			WP_CLI::line();
+			$notify = \WP_CLI\Utils\make_progress_bar( "Generating $total articles for the $section_name category.", $total );
+
+			for( $i = 0; $i < count( $articles_found ); $i++ ) {
+
+				$notify->tick();
+				$data .= '<h2>'. esc_html( $articles_found[$i]->name ) .'</h2>';
+
+				// Get the article.
+				$single_article = $this->get_article( $articles_found[$i]->id );
+				$data          .= $single_article->article->text;
+
+			}
+
+			$notify->finish();
+			WP_CLI::line();
+
+			// Close section
+			$data .= '</section>';
+
+		}
 
 		fwrite( $handle, $data );
 
