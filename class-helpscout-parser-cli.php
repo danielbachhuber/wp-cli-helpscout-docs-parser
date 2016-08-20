@@ -72,6 +72,10 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		WP_CLI::line( sprintf( esc_html( 'Generating documentation file in %s' ), get_template_directory() ) );
 		$this->generate_documentation( $theme, $formatted_categories, '' );
 
+		delete_transient( "wpcli_helpscout_docs_categories_{$collection_id}" );
+
+		WP_CLI::success( sprintf( 'Done. Documentation.html file has been generated in %s', get_template_directory() ) );
+
 	}
 
 	/**
