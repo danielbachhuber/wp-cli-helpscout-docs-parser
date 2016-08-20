@@ -79,17 +79,17 @@ section {
     position: relative;
     padding: 6% 8%;
 }
-blockquote {
+blockquote, p.note {
     border-left: 3px solid #d54e21;
     font-size: 16px;
     padding: 0 0 0 20px;
     color: #d54e21;
 }
-blockquote a {
+blockquote a, p.note a {
     color: #d54e21;
     font-weight: 500;
 }
-blockquote code {
+blockquote code, p.note code {
     color: #d54e21;
 }
 code, cite {
@@ -114,7 +114,6 @@ ol {
     list-style: number;
 }
 ol li {
-    color: #98999C;
     margin-bottom: 5px;
 }
 ol li:last-child {

@@ -374,6 +374,8 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 
 		}
 
+		$data .= '</body></html>';
+
 		fwrite( $handle, $data );
 
 	}
