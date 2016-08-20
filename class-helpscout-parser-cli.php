@@ -63,6 +63,15 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		WP_CLI::line();
 		WP_CLI::line( sprintf( esc_html( 'Found: %s categories.' ), $categories_count ) );
 
+		// Display list of found categories:
+		$formatted_categories = $this->format_categories( $categories );
+		WP_CLI\Utils\format_items( 'table', $formatted_categories, array( 'name', 'articles' ) );
+
+		// Create documenatation.
+		WP_CLI::line();
+		WP_CLI::line( sprintf( esc_html( 'Generating documentation file in %s' ), get_template_directory() ) );
+		$this->generate_documentation( $theme, '', '' );
+
 	}
 
 	/**
@@ -82,7 +91,7 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 	 * Get categories from a collection.
 	 *
 	 * @param  string $collection_id the collection ID.
-	 * @return object                
+	 * @return object
 	 */
 	private function get_categories( $collection_id ) {
 
@@ -100,6 +109,79 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		$request = json_decode( $request );
 
 		return $request;
+
+	}
+
+	/**
+	 * Format categories retrieved from the api.
+	 *
+	 * @param  array $categories list of categories to format.
+	 * @return array             formatted categories.
+	 */
+	private function format_categories( $categories ) {
+
+		$formatted_categories = array();
+
+		foreach ( $categories as $cat ) {
+
+			$formatted_categories[] = array(
+				'id'          => $cat->id,
+				'number'      => $cat->number,
+				'slug'        => $cat->slug,
+				'name'        => $cat->name,
+				'description' => $cat->description,
+				'articles'    => $cat->articleCount
+			);
+
+		}
+
+		return $formatted_categories;
+
+	}
+
+	/**
+	 * Generate offline documentation.
+	 *
+	 * @param  object $theme      current theme's information.
+	 * @param  array $categories  categories of the documentation.
+	 * @param  array $articles    articles of the documentation.
+	 * @return void
+	 */
+	private function generate_documentation( $theme, $categories, $articles ) {
+
+		$file = 'documentation.html';
+		$path = get_template_directory();
+
+		$handle = fopen( $path . '/' . $file, 'w' ) or WP_CLI::error( esc_html( 'Could not create documentation.html file.' ) );
+
+		// Set headers of the html file.
+		$this->set_headers( $theme );
+
+	}
+
+	/**
+	 * Set the headers of the html file.
+	 *
+	 * @param object $theme current theme's details.
+	 */
+	private function set_headers( $theme ) {
+
+		$file          = 'documentation.html';
+		$path          = get_template_directory();
+		$theme_name    = $theme->get( 'Name' );
+		$theme_author  = $theme->get( 'Author' );
+
+		$handle = fopen( $path . '/' . $file, 'w+' ) or WP_CLI::error( esc_html( 'Something went wrong, could not read documentation.html file.' ) );
+
+		$data = '<!DOCTYPE html>';
+		$data .= '<html id="html" class="no-js">';
+		$data .= '<head lang="en">';
+		$data .= '<meta http-equiv="content-type" content="text/html;charset=utf-8">';
+		$data .= '<meta name="viewport" content="width=device-width"/>';
+		$data .= '<title>'. $theme_name .' Documentation | '. $theme_author .'</title>';
+		$data .= '</head>';
+
+		fwrite( $handle, $data );
 
 	}
 
