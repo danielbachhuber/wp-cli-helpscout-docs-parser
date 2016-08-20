@@ -98,7 +98,7 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		$params = array(
 			'method'          => 'GET',
 			'headers'         => array(
-			  'Authorization' => 'Basic ' . base64_encode( $this->get_api_key() . ':' . 'X' )
+				'Authorization' => 'Basic ' . base64_encode( $this->get_api_key() . ':' . 'X' )
 			),
 			'sslverify'       => false,
 			'timeout'         => 15
@@ -179,9 +179,28 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		$data .= '<meta http-equiv="content-type" content="text/html;charset=utf-8">';
 		$data .= '<meta name="viewport" content="width=device-width"/>';
 		$data .= '<title>'. $theme_name .' Documentation | '. $theme_author .'</title>';
+		$data .= '<style type="text/css">';
+		$data .= $this->get_css();
+		$data .= '</style>';
 		$data .= '</head>';
 
 		fwrite( $handle, $data );
+
+	}
+
+	/**
+	 * Get css styling for the documentation.
+	 *
+	 * @return string
+	 */
+	private function get_css() {
+
+		$file = 'docs_style.css';
+		$path = plugin_dir_path( __FILE__ );
+
+		$style = file_get_contents( $path . '/' . $file );
+
+		return $style;
 
 	}
 
