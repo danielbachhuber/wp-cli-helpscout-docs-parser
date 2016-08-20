@@ -27,3 +27,13 @@ function wpcli_helpscout_docs_parser_load() {
 
 }
 add_action( 'plugins_loaded', 'wpcli_helpscout_docs_parser_load' );
+
+/*
+$docsApiClient = new DocsApiClient();
+$docsApiClient->setKey( 'b4a9f7a84e130750d3158002a0bfe7389d9788e1' );
+
+// Get Collections.
+$collection_id            = '561277879033606ab4cbf60c';
+$documentation_categories = $docsApiClient->getCategories( $collection_id );
+
+print_r( $documentation_categories );*/
