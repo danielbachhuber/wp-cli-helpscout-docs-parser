@@ -56,15 +56,19 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		WP_CLI::line();
 
 		// Get categories.
-		$find_categories  = $this->get_categories( $collection_id );
-		$categories       = $find_categories->categories->items;
-		$categories_count = $find_categories->categories->count;
+		$find_categories      = $this->get_categories( $collection_id );
+		$categories           = $find_categories->categories->items;
+		$formatted_categories = $this->format_categories( $categories );
+
+		// Exclude empty categories.
+		$criteria = array( 'articles' => 0 );
+		$formatted_categories = wp_list_filter( $formatted_categories, $criteria, 'NOT' );
+
+		$categories_count = count( $formatted_categories );
 
 		WP_CLI::line();
 		WP_CLI::line( sprintf( esc_html( 'Found: %s categories.' ), $categories_count ) );
 
-		// Display list of found categories:
-		$formatted_categories = $this->format_categories( $categories );
 		WP_CLI\Utils\format_items( 'table', $formatted_categories, array( 'name', 'articles' ) );
 
 		// Create documenatation.
