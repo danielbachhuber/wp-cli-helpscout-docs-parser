@@ -360,9 +360,9 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 				$notify->tick();
 				$data .= '<h2>'. esc_html( $articles_found[$i]->name ) .'</h2>';
 
-				// Get the article.
+				// Append content of the article.
 				$single_article = $this->get_article( $articles_found[$i]->id );
-				$data          .= $single_article->article->text;
+				$data          .= $this->format_content($single_article->article->text);
 
 			}
 
@@ -375,6 +375,22 @@ class HelpScout_Parser_CLI extends WP_CLI_Command {
 		}
 
 		fwrite( $handle, $data );
+
+	}
+
+	/**
+	 * Format content and fixes some issues that happen during import.
+	 *
+	 * Issue 1: iframes not using correct protocol.
+	 *
+	 * @param  string $content the content to format.
+	 * @return string
+	 */
+	private function format_content( $content ) {
+
+		$content = str_replace( '<iframe src="//', '<iframe src="https://' , $content );
+
+		return $content;
 
 	}
 
