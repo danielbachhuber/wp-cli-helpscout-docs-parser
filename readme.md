@@ -1,6 +1,6 @@
 # WPCLI Help Scout Documentation Parser
 
-Authors on ThemeForest are required to build an offline documentation for each theme we publish. I was tired of having to maintain 2 different documentations ( online and offline ) so I've built this little add-on that generates an offline documentation by grabbing articles on Help Scout docs sites.
+Authors on ThemeForest are required to build an offline documentation for each theme we publish. I didn't see the need of having to maintain 2 different documentations ( online and offline ) so I've built this little add-on that generates an offline documentation by grabbing articles on Help Scout docs sites.
 
 **This is a WPCLI add-on - you must install WPCLI to use this**.
 
