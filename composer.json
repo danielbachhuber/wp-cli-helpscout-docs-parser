@@ -1,6 +1,7 @@
 {
     "name": "alessandrotesoro/wp-cli-helpscout-docs-parser",
     "description": "WP-CLI Plugin: extract helpscout docs articles and categories to build an offline documentation.",
+    "type": "wp-cli-package",
     "homepage": "https://github.com/alessandrotesoro/wp-cli-helpscout-docs-parser",
     "license": "MIT",
     "require": {
